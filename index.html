@@ -100,12 +100,16 @@
         var gearBtn = document.getElementById('advancedToggleBtn');
         if (!gearBtn) return;
         var gearSvg = gearBtn.querySelector('svg');
-        gearBtn.addEventListener('click', function () {
+
+        function spinOnce() {
           gearSvg.classList.remove('spin-once');
-          // force reflow so the animation can restart even on rapid re-clicks
+          // force reflow so the animation can restart even if it's already mid-way or just finished
           void gearSvg.offsetWidth;
           gearSvg.classList.add('spin-once');
-        });
+        }
+
+        gearBtn.addEventListener('mouseenter', spinOnce);
+        gearBtn.addEventListener('click', spinOnce);
         gearSvg.addEventListener('animationend', function () {
           gearSvg.classList.remove('spin-once');
         });
