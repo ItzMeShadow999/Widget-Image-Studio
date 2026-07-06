@@ -74,65 +74,39 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 button {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
+  border: 0;
+  border-radius: 8px;
   padding: 9px 16px;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #dbdee1;
+  background: #18181b;
+  color: #a1a1aa;
   font-size: 13px;
   font-weight: 500;
   outline: none;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 108px;
-  height: 38px; 
 }
 
 button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: #27272a;
+  color: #fafafa;
 }
 
 button:focus-visible {
-  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.4);
+  box-shadow: 0 0 0 2px #a78bfa44;
 }
 
 button.primary {
-  position: relative;
-  overflow: hidden;
-  border: none;
-  background: linear-gradient(180deg, #5865f2 0%, #4752c4 100%);
-  color: #ffffff;
+  background: #7c3aed;
+  color: #fafafa;
 }
 
 button.primary:hover {
-  background: linear-gradient(180deg, #6773f4 0%, #535fcd 100%);
-}
-
-button.primary::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transform: skewX(-25deg);
-  transition: 0.6s;
-  pointer-events: none;
-}
-
-button.primary:hover::after {
-  left: 150%;
+  background: #8b5cf6;
 }
 
 button:disabled {
@@ -284,11 +258,11 @@ button:disabled:hover {
   height: 100%;
   object-fit: contain;
   object-position: center;
-background:
-    linear-gradient(45deg, #a5b4fc 25%, transparent 25%),
-    linear-gradient(-45deg, #a5b4fc 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #bae6fd 75%),
-    linear-gradient(-45deg, transparent 75%, #bae6fd 75%);
+  background:
+    linear-gradient(45deg, #141417 25%, transparent 25%),
+    linear-gradient(-45deg, #141417 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #141417 75%),
+    linear-gradient(-45deg, transparent 75%, #141417 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
 }
@@ -380,51 +354,54 @@ background:
   }
 }
 
-/* Update the existing animation to be smoother */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 .advanced-toggle-btn {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
+  width: 15px;
+  height: 15px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #dbdee1;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
+  color: #52525b;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: color 0.15s ease;
   align-self: end;
+  margin-bottom: 8px;
   margin-left: auto;
+  margin-right: 2px;
   flex: 0 0 auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .advanced-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  color: #7c3aed;
+  background: transparent;
 }
 
-/* Rotation on Click */
-.advanced-toggle-btn[aria-pressed="true"] svg {
-  animation: spin 0.8s linear forwards;
+.advanced-toggle-btn[aria-pressed="true"] {
+  color: #7c3aed;
+  background: transparent;
 }
-/* Rotation on Click */
-.advanced-toggle-btn[aria-pressed="true"] svg {
-  animation: spin 0.8s linear forwards;
+
+.advanced-toggle-btn svg {
+  display: block;
 }
-/* Rotation on Click */
-.advanced-toggle-btn[aria-pressed="true"]::before {
-  animation: spin 0.8s linear forwards;
+
+.advanced-toggle-btn:hover svg {
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: rotate(90deg);
+}
+
+.advanced-toggle-btn[aria-pressed="true"] svg {
+  transform: rotate(180deg);
+}
+
+.advanced-panel {
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.18s ease;
+  overflow: hidden;
 }
 
 .advanced-panel--open {
@@ -524,7 +501,7 @@ background:
 }
 
 .control-actions .advanced-toggle-btn {
-  min-width: 38px;
+  min-width: 0;
 }
 
 .status {
