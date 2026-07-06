@@ -14,7 +14,7 @@ html, body {
 
 body {
   height: 100vh;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Lexend, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-color: #16171a;
   background-image: radial-gradient(
     110% 130% at 100% 0%,
@@ -37,16 +37,19 @@ input, button {
   font: inherit;
 }
 
+/* ── Inputs (Glass) ── */
 input {
   width: 100%;
-  background: #18181b;
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #fafafa;
-  border: 1px solid #27272a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 9px 12px;
   font-size: 13px;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 input::placeholder {
@@ -54,8 +57,9 @@ input::placeholder {
 }
 
 input:focus {
-  border-color: #52525b;
-  box-shadow: 0 0 0 2px #a78bfa1a;
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.15);
+  background: rgba(24, 24, 27, 0.8);
 }
 
 input[readonly] {
@@ -228,8 +232,10 @@ button:disabled:hover {
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 12px;
-  background: #0c0c0f;
-  border: 1px solid #18181b;
+  background: rgba(12, 12, 15, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
   position: relative;
   transition: border-color 0.15s ease, background 0.15s ease;
@@ -237,11 +243,11 @@ button:disabled:hover {
 
 .preview-wrap.drag-over {
   border-color: #7c3aed;
-  background: #120c1f;
+  background: rgba(18, 12, 31, 0.6);
 }
 
 .preview-empty {
-  color: #27272a;
+  color: #3f3f46;
   font-size: 13px;
   user-select: none;
   text-align: center;
@@ -252,7 +258,7 @@ button:disabled:hover {
   display: inline-block;
   margin-top: 6px;
   font-size: 11px;
-  color: #1c1c1f;
+  color: #27272a;
   letter-spacing: 0.04em;
 }
 
@@ -265,6 +271,8 @@ button:disabled:hover {
   justify-content: center;
   gap: 12px;
   background: rgba(12, 12, 15, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #d4d4d8;
   font-size: 13px;
   z-index: 2;
@@ -331,18 +339,13 @@ button:disabled:hover {
   padding: 8px 14px;
   font-size: 12px;
   color: #a1a1aa;
-  background: linear-gradient(transparent, #09090bdd);
+  background: linear-gradient(transparent, rgba(9, 9, 11, 0.87));
   pointer-events: none;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .controls {
@@ -425,7 +428,7 @@ button:disabled:hover {
   cursor: pointer;
   transition: all 0.2s ease;
   align-self: end;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   margin-left: 4px;
   flex: 0 0 auto;
   min-width: 0;
@@ -452,24 +455,24 @@ button:disabled:hover {
     0 4px 16px rgba(88, 101, 242, 0.15);
 }
 
-/* Gear icon gets light-blue → blurple glow */
-.advanced-toggle-btn svg {
-  display: block;
-  width: 16px;
-  height: 16px;
-  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              color 0.2s ease,
-              filter 0.2s ease;
+/* Default gear fill */
+.advanced-toggle-btn svg path {
+  fill: currentColor;
+  transition: fill 0.2s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.2s ease;
 }
 
 .advanced-toggle-btn:hover svg {
   transform: rotate(90deg);
 }
 
+/* Active gear: gradient fill + glow */
 .advanced-toggle-btn[aria-pressed="true"] svg {
   transform: rotate(180deg);
-  color: #a78bfa;
-  filter: drop-shadow(0 0 2px #a78bfa) drop-shadow(0 0 6px rgba(88, 101, 242, 0.5));
+}
+
+.advanced-toggle-btn[aria-pressed="true"] svg path {
+  fill: url(#gearGradient);
+  filter: drop-shadow(0 0 2px #ADD8E6) drop-shadow(0 0 6px rgba(88, 101, 242, 0.6));
 }
 
 .advanced-panel {
