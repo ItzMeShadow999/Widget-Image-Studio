@@ -1,5 +1,3 @@
-
-
 const REFERENCE_SIZE = 512;
 const AUTO_TOP_STRIP_BASE = 17;
 const AUTO_RADIUS_BASE = 36;
@@ -1720,7 +1718,7 @@ rotSlider.addEventListener('input', () => setRotation(parseInt(rotSlider.value))
 customRotation.addEventListener('change', () => setRotation(parseInt(customRotation.value) || 0));
 
 function updateRotationRing() {
-  document.getElementById('rotationRing').style.transform = `rotate(${state.rotation}deg)`;
+  document.getElementById('rotationHandle').style.transform = `rotate(${state.rotation}deg)`;
 }
 
 
