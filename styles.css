@@ -1224,18 +1224,23 @@
   font-size: 12px; color: #71717a;
 }
 
+
+/* ═══════════════════════════════════════════
+   W.I.S. Custom Colour Picker
+   ═══════════════════════════════════════════ */
+
+/* ── trigger ── */
 .wcp-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 5px 10px 5px 6px;
+  gap: 0;
+  padding: 0;
   background: rgba(18,18,22,0.8);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
-  cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-  user-select: none;
   position: relative;
+  overflow: hidden;
 }
 .wcp-trigger:hover {
   border-color: rgba(139,92,246,0.4);
@@ -1245,27 +1250,88 @@
   border-color: rgba(139,92,246,0.55) !important;
   box-shadow: 0 0 0 3px rgba(139,92,246,0.14);
 }
+
+/* colour swatch square – click opens picker */
 .wcp-swatch {
-  width: 20px; height: 20px;
-  border-radius: 5px;
-  border: 1px solid rgba(255,255,255,0.15);
+  width: 28px; height: 28px;
+  border-radius: 6px 0 0 6px;
+  border-right: 1px solid rgba(255,255,255,0.08);
   display: block;
   flex-shrink: 0;
   background: #000;
+  cursor: pointer;
+  transition: filter 0.15s;
 }
-.wcp-hex {
+.wcp-swatch:hover { filter: brightness(1.15); }
+
+/* inline editable hex field */
+.wcp-hex-inline {
   font-size: 11px;
   font-family: 'JetBrains Mono', monospace;
-  color: #a1a1aa;
-  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.05em;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 68px;
+  padding: 0 6px;
+  cursor: text;
+  text-transform: uppercase;
+  line-height: 28px;
+  height: 28px;
 }
+.wcp-hex-inline:focus {
+  color: #fff;
+  background: rgba(139,92,246,0.1);
+}
+
+/* caret chevron – click opens picker */
 .wcp-caret {
   color: #52525b;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, color 0.15s;
   flex-shrink: 0;
+  padding: 0 7px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
 }
-.wcp-trigger--open .wcp-caret { transform: rotate(180deg); }
+.wcp-caret:hover { color: #a1a1aa; }
+.wcp-trigger--open .wcp-caret { transform: rotate(180deg); color: #8b5cf6; }
 
+/* ── before / after preview strip ── */
+.wcp-preview-row {
+  display: flex;
+  height: 28px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.wcp-preview-before,
+.wcp-preview-after {
+  flex: 1;
+  transition: background 0.2s ease;
+}
+.wcp-preview-before {
+  cursor: pointer;
+  position: relative;
+}
+.wcp-preview-before::after {
+  content: '↩';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0);
+  transition: color 0.15s;
+}
+.wcp-preview-before:hover::after { color: rgba(255,255,255,0.7); }
+.wcp-preview-after { border-left: 1px solid rgba(0,0,0,0.2); }
+
+/* ── popover panel ── */
 .wcp-popover {
   position: fixed;
   z-index: 9999;
@@ -1285,6 +1351,7 @@
   gap: 10px;
 }
 
+/* ── SV gradient canvas ── */
 .wcp-gradient {
   position: relative;
   width: 100%;
@@ -1311,6 +1378,7 @@
   transition: none;
 }
 
+/* ── hue & alpha tracks ── */
 .wcp-hue-row, .wcp-alpha-row {
   position: relative;
   height: 12px;
@@ -1336,6 +1404,7 @@
   left: 0;
 }
 
+/* ── text inputs ── */
 .wcp-inputs {
   display: flex;
   gap: 5px;
@@ -1380,6 +1449,7 @@
   display: block;
 }
 
+/* ── preset swatches ── */
 .wcp-swatches {
   display: flex;
   gap: 5px;
