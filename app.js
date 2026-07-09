@@ -656,6 +656,33 @@ tabButtons.forEach((button) => {
 
 
 
+document.querySelectorAll(".warn-callout-close").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const callout = btn.closest(".warn-callout");
+    if (!callout || callout.classList.contains("is-dismissing")) return;
+
+    
+    callout.style.maxHeight = callout.getBoundingClientRect().height + "px";
+    callout.setAttribute("aria-hidden", "true");
+    callout.classList.add("is-dismissing");
+
+    callout.addEventListener("animationend", () => {
+      
+      callout.classList.add("is-collapsing");
+      callout.style.maxHeight = "0px";
+      callout.style.paddingTop = "0px";
+      callout.style.paddingBottom = "0px";
+      callout.style.borderWidth = "0px";
+
+      callout.addEventListener("transitionend", (event) => {
+        if (event.target === callout) callout.remove();
+      }, { once: true });
+    }, { once: true });
+  });
+});
+
+
+
 (function widgetFramer() {
   const titlebarStatus = document.querySelector("#titlebarStatus");
 
