@@ -64,6 +64,14 @@ Because it implements universal web standards and low-level canvas stream render
      ```
 3. Open your browser and navigate to the specified localhost address (e.g., `http://localhost:8080`) to interact with your tools locally with maximum data isolation.
 
+
+
+<details>
+  <summary>Click to expand advanced configuration</summary>
+  
+  Put your hidden markdown or code blocks here!
+</details>
+
 ---
 
 ## 📄 License & Attribution
