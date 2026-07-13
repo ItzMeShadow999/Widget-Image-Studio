@@ -8,8 +8,6 @@ const AUTO_RADIUS_EXPONENT =
 
 const MAX_ICON_SIZE = 256;
 
-
-
 function u16(view, offset, value) { view.setUint16(offset, value, true); }
 function u32(view, offset, value) { view.setUint32(offset, value, true); }
 function i32(view, offset, value) { view.setInt32(offset, value, true); }
@@ -204,9 +202,6 @@ function encodeTIFF({ width, height, data }) {
   return bytes;
 }
 
-
-
-
 function encodeIcoContainer({ width, height, data }, isCursor) {
   const andRowBytes = Math.ceil(width / 8 / 4) * 4;
   const andMaskSize = andRowBytes * height;
@@ -254,7 +249,7 @@ function encodeIcoContainer({ width, height, data }, isCursor) {
       bytes[o++] = data[s + 3];
     }
   }
-  
+
   return bytes;
 }
 
@@ -308,8 +303,6 @@ function encodePDF(jpegBytes, width, height) {
   for (const c of chunks) { out.set(c, o); o += c.length; }
   return out;
 }
-
-
 
 function clearObjectUrl(url) {
   if (url) URL.revokeObjectURL(url);
@@ -383,7 +376,7 @@ function fileNameFromUrl(url, contentType) {
   try {
     pathname = new URL(url).pathname.split("/").pop() || "image";
   } catch {
-    
+
   }
   pathname = decodeURIComponent(pathname).split(/[?#]/)[0] || "image";
 
@@ -432,7 +425,7 @@ function mediaFileNameFromUrl(url, contentType) {
   try {
     pathname = new URL(url).pathname.split("/").pop() || "download";
   } catch {
-    
+
   }
   pathname = decodeURIComponent(pathname).split(/[?#]/)[0] || "download";
 
@@ -448,9 +441,7 @@ function mediaFileNameFromUrl(url, contentType) {
 }
 
 async function fetchMediaAsFile(rawUrl, { acceptTypes } = {}) {
-  // Accept any image or video by default — the "direct download" box
-  // isn't limited to mp4/gif anymore, just anything the browser can
-  // fetch directly (subject to the host allowing cross-origin reads).
+
   const types = acceptTypes ?? ["video/", "image/"];
 
   let url;
@@ -574,8 +565,6 @@ function isGifInput(fileName) {
   return /\.gif$/i.test(fileName);
 }
 
-
-
 let modernGifPromise = null;
 
 async function loadModernGif() {
@@ -610,7 +599,40 @@ async function loadModernGif() {
   }
 }
 
+let webpEncoderPromise = null;
 
+async function loadWebpEncoder() {
+  if (webpEncoderPromise) return webpEncoderPromise;
+
+  webpEncoderPromise = (async () => {
+    const sources = [
+      "https://esm.sh/webp-wasm@1.0.6",
+      "https://cdn.jsdelivr.net/npm/webp-wasm@1.0.6/+esm"
+    ];
+
+    let lastError = null;
+    for (const source of sources) {
+      try {
+        const module = await import( source);
+        const encodeAnimation = module?.encodeAnimation ?? module?.default?.encodeAnimation;
+        if (typeof encodeAnimation === "function") {
+          return { encodeAnimation };
+        }
+        lastError = new Error(`Loaded ${source} but it did not expose an encodeAnimation() API.`);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError ?? new Error("Could not load the animated WEBP engine from any source.");
+  })();
+
+  try {
+    return await webpEncoderPromise;
+  } catch (error) {
+    webpEncoderPromise = null;
+    throw error;
+  }
+}
 
 function createPanelUI(refs) {
   function setPreviewLoading(loading, message = "Loading preview...") {
@@ -686,8 +708,6 @@ function createPanelUI(refs) {
 
   return ui;
 }
-
-
 
 function wireImagePicker({ dropZone, browseButton, fileInput, urlInput, urlImportButton, ui, onFile }) {
   function openFileDialog() {
@@ -767,8 +787,6 @@ function wireImagePicker({ dropZone, browseButton, fileInput, urlInput, urlImpor
   });
 }
 
-
-
 const tabButtons = document.querySelectorAll(".tab-button");
 const panels = {
   framer: document.querySelector("#framerPanel"),
@@ -786,20 +804,17 @@ tabButtons.forEach((button) => {
   });
 });
 
-
-
 document.querySelectorAll(".warn-callout-close").forEach((btn) => {
   btn.addEventListener("click", () => {
     const callout = btn.closest(".warn-callout");
     if (!callout || callout.classList.contains("is-dismissing")) return;
 
-    
     callout.style.maxHeight = callout.getBoundingClientRect().height + "px";
     callout.setAttribute("aria-hidden", "true");
     callout.classList.add("is-dismissing");
 
     callout.addEventListener("animationend", () => {
-      
+
       callout.classList.add("is-collapsing");
       callout.style.maxHeight = "0px";
       callout.style.paddingTop = "0px";
@@ -812,8 +827,6 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     }, { once: true });
   });
 });
-
-
 
 (function widgetFramer() {
   const titlebarStatus = document.querySelector("#titlebarStatus");
@@ -933,14 +946,6 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     }
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
   function hardenAlphaForGif(canvas, threshold = 128) {
     const context = canvas.getContext("2d");
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -967,15 +972,54 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     return /\.webp$/i.test(fileName);
   }
 
-  
-  
+  async function isAnimatedWebp(file) {
+    if (!isWebpInput(file.name)) return false;
+    const bytes = new Uint8Array(await file.slice(0, 30).arrayBuffer());
+    if (bytes.length < 21) return false;
+    const tag = (start, len) => String.fromCharCode(...bytes.slice(start, start + len));
+    if (tag(0, 4) !== "RIFF" || tag(8, 4) !== "WEBP") return false;
+    if (tag(12, 4) !== "VP8X") return false; 
+    const flags = bytes[20]; 
+    return (flags & 0x02) !== 0; 
+  }
+
+  async function decodeAnimatedWebpFrames(file) {
+    if (typeof ImageDecoder === "undefined") {
+      throw new Error("This browser can't decode animated WEBP frames. Try Chrome or Edge.");
+    }
+    const buffer = await file.arrayBuffer();
+    const decoder = new ImageDecoder({ data: buffer, type: "image/webp" });
+    await decoder.tracks.ready;
+    const track = decoder.tracks.selectedTrack;
+    const frameCount = track?.frameCount ?? 1;
+
+    const frames = [];
+    let width = 0, height = 0;
+    for (let i = 0; i < frameCount; i++) {
+      const { image } = await decoder.decode({ frameIndex: i });
+      width = image.displayWidth;
+      height = image.displayHeight;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(image, 0, 0);
+      const data = canvas.getContext("2d").getImageData(0, 0, width, height).data;
+      const delay = Math.max(20, Math.round((image.duration ?? 100000) / 1000)); 
+      image.close();
+
+      frames.push({ data, width, height, delay });
+    }
+    decoder.close();
+    return { width, height, frames };
+  }
+
   async function encodeCanvas(canvas, format) {
     if (format === "png") {
       return { blob: await canvasToBlob(canvas, "image/png"), mimeType: "image/png" };
     }
     if (format === "jpg") {
-      
-      
+
       const flat = flattenCanvasOnWhite(canvas);
       return { blob: await canvasToBlob(flat, "image/jpeg", 0.92), mimeType: "image/jpeg" };
     }
@@ -1060,7 +1104,7 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     const totalFrames = decodedFrames.length || 1;
 
     if (format !== "gif") {
-      
+
       const frame = decodedFrames[0];
       const frameCanvas = document.createElement("canvas");
       frameCanvas.width = frame.width;
@@ -1116,8 +1160,7 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
 
       const percent = 15 + Math.round(((index + 1) / totalFrames) * 65);
       ui.setProgressState(true, percent, `Preparing frames ${index + 1}/${totalFrames} (${percent}%)`);
-      
-      
+
       await yieldToUI();
     }
 
@@ -1147,15 +1190,124 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     };
   }
 
+  async function runAnimatedWebp(file, format) {
+    ui.setProgressState(true, 5, "Reading WEBP (5%)");
+    const { width, height, frames } = await decodeAnimatedWebpFrames(file);
+    const { finalTopStrip, finalRadius, topStripAuto, radiusAuto } = computeDimensions(width, height);
+    const totalFrames = frames.length || 1;
+
+    if (format !== "webp") {
+
+      const frame = frames[0];
+      const frameCanvas = document.createElement("canvas");
+      frameCanvas.width = frame.width;
+      frameCanvas.height = frame.height;
+      frameCanvas.getContext("2d").putImageData(
+        new ImageData(new Uint8ClampedArray(frame.data), frame.width, frame.height), 0, 0
+      );
+
+      const outputCanvas = document.createElement("canvas");
+      outputCanvas.width = width;
+      outputCanvas.height = height;
+      applyWidgetEffect(outputCanvas.getContext("2d"), width, height, finalTopStrip, finalRadius, frameCanvas);
+
+      ui.setProgressState(true, 80, "Encoding image (80%)");
+      const { blob } = await encodeCanvas(outputCanvas, format);
+      clearObjectUrl(outputUrl);
+      outputUrl = URL.createObjectURL(blob);
+      ui.setProgressState(true, 100, "Done (100%)");
+
+      return {
+        outputName: outputName.value.trim() || getSuggestedOutputName(file.name, format),
+        previewUrl: outputUrl,
+        width, height,
+        topStrip: finalTopStrip,
+        radius: finalRadius,
+        autoCalculated: topStripAuto && radiusAuto,
+        frameCount: 1,
+        animated: false,
+        warning: [
+          sizeWarning(width, height),
+          `Source WEBP has ${totalFrames} frames — only the first frame was used because ${format.toUpperCase()} doesn't support animation.`,
+        ].filter(Boolean).join(" "),
+      };
+    }
+
+    let webpEncoder;
+    try {
+      webpEncoder = await loadWebpEncoder();
+    } catch (error) {
+      throw new Error(`Animated WEBP engine failed to load (${error?.message ?? error}). Check your connection and reload the page.`);
+    }
+
+    ui.setProgressState(true, 15, "Preparing frames (15%)");
+    const outputFrames = [];
+    for (let index = 0; index < frames.length; index++) {
+      const frame = frames[index];
+      const frameCanvas = document.createElement("canvas");
+      frameCanvas.width = frame.width;
+      frameCanvas.height = frame.height;
+      frameCanvas.getContext("2d").putImageData(
+        new ImageData(new Uint8ClampedArray(frame.data), frame.width, frame.height), 0, 0
+      );
+
+      const outputCanvas = document.createElement("canvas");
+      outputCanvas.width = width;
+      outputCanvas.height = height;
+      applyWidgetEffect(outputCanvas.getContext("2d"), width, height, finalTopStrip, finalRadius, frameCanvas);
+
+      const outputData = outputCanvas.getContext("2d").getImageData(0, 0, width, height).data;
+      outputFrames.push({ data: outputData, duration: frame.delay ?? 100 });
+
+      const percent = 15 + Math.round(((index + 1) / totalFrames) * 65);
+      ui.setProgressState(true, percent, `Preparing frames ${index + 1}/${totalFrames} (${percent}%)`);
+
+      await yieldToUI();
+    }
+
+    ui.setProgressState(true, 85, "Encoding WEBP (85%)");
+    const output = await webpEncoder.encodeAnimation({
+      width,
+      height,
+      hasAlpha: true,
+      frames: outputFrames,
+      loop: 0,
+      quality: highQualityAnimated.checked ? 90 : 60,
+    });
+
+    clearObjectUrl(outputUrl);
+    const blob = new Blob([output], { type: "image/webp" });
+    outputUrl = URL.createObjectURL(blob);
+    ui.setProgressState(true, 100, `Encoding frames ${totalFrames}/${totalFrames} (100%)`);
+
+    return {
+      outputName: outputName.value.trim() || getSuggestedOutputName(file.name, format),
+      previewUrl: outputUrl,
+      width, height,
+      topStrip: finalTopStrip,
+      radius: finalRadius,
+      autoCalculated: topStripAuto && radiusAuto,
+      frameCount: totalFrames,
+      animated: true,
+      warning: sizeWarning(width, height),
+    };
+  }
+
+  let selectedFileIsAnimatedWebp = false;
+
   async function handleSelectedFile(file) {
     if (!file) return;
+
+    selectedFileIsAnimatedWebp = await isAnimatedWebp(file);
 
     setSelectedFile(file);
     inputPath.value = file.name;
     outputName.value = getSuggestedOutputName(file.name, outputFormat.value);
     resetResultState();
 
-    ui.baseMeta = isWebpInput(file.name)
+    ui.baseMeta = selectedFileIsAnimatedWebp
+      ? "Previewing selected image."
+      : isWebpInput(file.name)
       ? "Previewing selected image. WEBP exports as a still frame."
       : "Previewing selected image.";
 
@@ -1208,21 +1360,24 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     ui.setStatus("", "neutral");
     ui.setPreviewLoading(true, "");
 
-    
-    
-    
-    
     const inputIsAnimatedGif = isGifInput(selectedFile.name);
-    const format = inputIsAnimatedGif ? "gif" : outputFormat.value;
+    const inputIsAnimatedWebp = !inputIsAnimatedGif && selectedFileIsAnimatedWebp;
+    const format = inputIsAnimatedGif ? "gif" : inputIsAnimatedWebp ? "webp" : outputFormat.value;
 
     if (inputIsAnimatedGif && outputFormat.value !== "gif") {
       outputFormat.value = "gif";
+      outputFormat.dispatchEvent(new Event("change"));
+    }
+    if (inputIsAnimatedWebp && outputFormat.value !== "webp") {
+      outputFormat.value = "webp";
       outputFormat.dispatchEvent(new Event("change"));
     }
 
     try {
       const result = inputIsAnimatedGif
         ? await runAnimatedGif(selectedFile, format)
+        : inputIsAnimatedWebp
+        ? await runAnimatedWebp(selectedFile, format)
         : await runStill(selectedFile, format);
 
       lastResult = result;
@@ -1269,8 +1424,6 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
   ui.clearPreview();
   ui.setStatus("", "neutral");
 })();
-
-
 
 (function fileConverter() {
   const FORMATS = {
@@ -1324,8 +1477,6 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
   let outputUrl = "";
   let lastResult = null;
 
-  
-  
   (function detectAvifSupport() {
     const probe = document.createElement("canvas");
     probe.width = 1;
@@ -1380,7 +1531,7 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     ui.setPreviewLoading(true, "");
 
     try {
-      
+
       await loadImageElement(selectedInputUrl);
       ui.setPreview(selectedInputUrl, "Selected input image");
       ui.setPreviewMeta(ui.baseMeta);
@@ -1547,15 +1698,7 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
   ui.setStatus("", "neutral");
 })();
 
-
-
 (function advancedEditor() {
-
-
-
-
-
-
 
 const state = {
   file: null,
@@ -1576,9 +1719,6 @@ const state = {
   aspectRatio: null
 };
 
-
-
-
 const canvas        = document.getElementById('advCanvas');
 const ctx           = canvas.getContext('2d', { willReadFrequently: true });
 const canvasEmpty   = document.getElementById('canvasEmpty');
@@ -1596,10 +1736,6 @@ const advDownloadBtn = document.getElementById('advDownloadBtn');
 const qualitySlider = document.getElementById('qualitySlider');
 const qualityVal    = document.getElementById('qualityVal');
 
-
-
-
-
 function updateSliderFill(el) {
   const min = parseFloat(el.min) || 0;
   const max = parseFloat(el.max) || 100;
@@ -1615,9 +1751,6 @@ function initAllSliderFills() {
   });
 }
 initAllSliderFills();
-
-
-
 
 const PRESETS = {
   discord: [
@@ -1676,14 +1809,8 @@ const PRESETS = {
   custom: []
 };
 
-
-
-
 function getThemeAccentColor() {
-  // Reads the current theme's accent color from the --violet CSS variable
-  // (defined per-theme in styles.css) rather than hardcoding a color here,
-  // so canvas-drawn UI stays in sync with whatever theme is active — e.g.
-  // White mode sets --violet to black, Discord sets it to blurple, etc.
+
   const v = getComputedStyle(document.documentElement)
     .getPropertyValue('--violet').trim();
   return v || '#8b5cf6';
@@ -1761,9 +1888,6 @@ function applyPreset(category, index) {
   if (state.originalImage) renderCanvas();
 }
 
-
-
-
 document.getElementById('presetTabs').addEventListener('click', e => {
   const btn = e.target.closest('.tab-btn');
   if (!btn) return;
@@ -1774,7 +1898,6 @@ document.getElementById('presetTabs').addEventListener('click', e => {
   const key = tab.charAt(0).toUpperCase() + tab.slice(1);
   document.getElementById(`presetPanel${key}`)?.classList.add('active');
 });
-
 
 document.getElementById('addCustomPresetBtn').addEventListener('click', () => {
   const name = document.getElementById('customPresetName').value.trim() || 'Custom';
@@ -1787,7 +1910,6 @@ document.getElementById('addCustomPresetBtn').addEventListener('click', () => {
   document.getElementById('customPresetH').value    = '';
   setStatus(`Added custom preset: ${name} (${w}×${h})`, 'success');
 });
-
 
 document.getElementById('canvasW').addEventListener('input', () => {
   if (document.getElementById('lockAspect').checked && state.aspectRatio) {
@@ -1812,9 +1934,6 @@ document.getElementById('applyCanvasSizeBtn').addEventListener('click', () => {
   setStatus(`Canvas resized to ${w}×${h}`, 'success');
 });
 
-
-
-
 document.getElementById('formatChipsAE').addEventListener('click', e => {
   const chip = e.target.closest('.format-chip');
   if (!chip) return;
@@ -1832,17 +1951,11 @@ function updateOutputName() {
   advOutputName.value = stem + '.' + (extMap[state.outputFmt] || 'png');
 }
 
-
-
-
 qualitySlider.addEventListener('input', () => {
   state.quality = qualitySlider.value / 100;
   qualityVal.textContent = qualitySlider.value;
   updateBudget();
 });
-
-
-
 
 const adjSliders = [
   { id: 'adjBrightness', key: 'brightness', vId: 'vBrightness', fmt: v => v },
@@ -1879,9 +1992,6 @@ document.getElementById('resetAdjBtn').addEventListener('click', () => {
   setStatus('Adjustments reset.', 'info');
 });
 
-
-
-
 const rotSlider      = document.getElementById('rotationSlider');
 const rotDisplay     = document.getElementById('rotationDisplay');
 const vRotation      = document.getElementById('vRotation');
@@ -1897,7 +2007,6 @@ function setRotation(deg) {
   if (state.originalImage) renderCanvas();
 }
 
-
 window.setRotation = setRotation;
 
 rotSlider.addEventListener('input', () => setRotation(parseInt(rotSlider.value)));
@@ -1906,7 +2015,6 @@ customRotation.addEventListener('change', () => setRotation(parseInt(customRotat
 function updateRotationRing() {
   document.getElementById('rotationHandle').style.transform = `rotate(${state.rotation}deg)`;
 }
-
 
 let ringDragging = false;
 const ring = document.getElementById('rotationRing');
@@ -1921,9 +2029,6 @@ document.addEventListener('mousemove', e => {
 });
 document.addEventListener('mouseup', () => { ringDragging = false; });
 
-
-
-
 document.getElementById('flipHBtn').addEventListener('click', () => {
   state.flipH = !state.flipH;
   document.getElementById('flipHBtn').style.opacity = state.flipH ? '1' : '0.6';
@@ -1934,9 +2039,6 @@ document.getElementById('flipVBtn').addEventListener('click', () => {
   document.getElementById('flipVBtn').style.opacity = state.flipV ? '1' : '0.6';
   if (state.originalImage) renderCanvas();
 });
-
-
-
 
 document.getElementById('tintSwatches').addEventListener('click', e => {
   const sw = e.target.closest('.swatch');
@@ -1955,9 +2057,6 @@ document.getElementById('customTintColor').addEventListener('input', e => {
   if (state.originalImage) renderCanvas();
 });
 
-
-
-
 document.getElementById('colorModeChips').addEventListener('click', e => {
   const chip = e.target.closest('.format-chip');
   if (!chip) return;
@@ -1966,9 +2065,6 @@ document.getElementById('colorModeChips').addEventListener('click', e => {
   state.colorMode = chip.dataset.mode;
   if (state.originalImage) renderCanvas();
 });
-
-
-
 
 const FILTERS = [
   { name: 'None',       css: 'none' },
@@ -2032,9 +2128,6 @@ function updateFilterPreviews() {
 
 buildFilterStrip();
 
-
-
-
 advBrowseBtn.addEventListener('click', () => advFileInput.click());
 advFileInput.addEventListener('change', () => {
   const f = advFileInput.files?.[0];
@@ -2048,7 +2141,6 @@ advFetchBtn.addEventListener('click', () => fetchUrl(advUrlInput.value.trim()));
 advUrlInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') fetchUrl(advUrlInput.value.trim());
 });
-
 
 dropZoneAdv.addEventListener('dragover', e => {
   e.preventDefault();
@@ -2070,7 +2162,6 @@ dropZoneAdv.addEventListener('click', e => {
     advFileInput.click();
   }
 });
-
 
 document.addEventListener('paste', e => {
   const items = e.clipboardData?.items;
@@ -2135,9 +2226,6 @@ function getSuggestedName(fileName) {
   return stem + '-edited.' + (extMap[state.outputFmt] || 'png');
 }
 
-
-
-
 function buildCSSFilter() {
   const parts = [];
   if (state.brightness) parts.push(`brightness(${1 + state.brightness / 100})`);
@@ -2161,7 +2249,6 @@ function renderCanvas() {
 
   ctx.clearRect(0, 0, W, H);
 
-  
   if (!document.getElementById('canvasBgTransparent').checked) {
     ctx.fillStyle = document.getElementById('canvasBgColor').value;
     ctx.fillRect(0, 0, W, H);
@@ -2176,14 +2263,12 @@ function renderCanvas() {
   ctx.drawImage(img, -W / 2, -H / 2, W, H);
   ctx.restore();
 
-  
   if (['grayscale','sepia','invert','duotone','posterize'].includes(state.colorMode)) {
     applyColorMode(W, H);
   }
   if (state.noise   > 0) applyNoise(W, H);
   if (state.sharpen > 0) applySharpen(W, H);
 
-  
   if (state.tint !== 'none' && state.tintIntensity > 0) {
     ctx.save();
     ctx.globalAlpha = (state.tintIntensity / 100) * 0.6;
@@ -2277,18 +2362,10 @@ function applyVignette(W, H) {
   ctx.restore();
 }
 
-
-
-
 advApplyBtn.addEventListener('click', async () => {
   if (!state.originalImage) return;
   renderCanvas();
 
-  
-  
-  
-  
-  
   if (state.outputFmt === 'gif') {
     advApplyBtn.disabled = true;
     advDownloadBtn.disabled = true;
@@ -2350,9 +2427,6 @@ function fmtToMime(fmt) {
   return map[fmt] || 'image/png';
 }
 
-
-
-
 const TIERS = [
   { id: 'free',       name: 'Free / DM',        limit: 25  * 1024 * 1024 },
   { id: 'nitrobasic', name: 'Nitro Basic',       limit: 50  * 1024 * 1024 },
@@ -2403,7 +2477,6 @@ function updateBudget(originalSize, outputSize) {
     else                   { el.classList.add('over');       sizeEl.style.color = '#fca5a5'; }
   });
 
-  
   const tips = [];
   if (size > 25*1024*1024)  tips.push({ tone:'warn', text:"File exceeds 25 MB — won't upload on free Discord." });
   if (state.outputFmt === 'png' && size > 1024*1024) tips.push({ tone:'info', text:'Try JPG or WEBP — often 60–80% smaller than PNG for photos.' });
@@ -2418,9 +2491,6 @@ function updateBudget(originalSize, outputSize) {
     .join('');
 }
 
-
-
-
 function setStatus(msg, tone = 'neutral') {
   statusBar.textContent  = msg;
   statusBar.dataset.tone = tone;
@@ -2428,27 +2498,10 @@ function setStatus(msg, tone = 'neutral') {
   if (ts) ts.textContent = msg;
 }
 
-
-
-
 document.getElementById('canvasBgColor').addEventListener('input',     () => { if (state.originalImage) renderCanvas(); });
 document.getElementById('canvasBgTransparent').addEventListener('change', () => { if (state.originalImage) renderCanvas(); });
 })();
 
-
-/* ══════════════════════════════════════════════════════════════════
-   Theme Switcher logic
-   ------------------------------------------------------------------
-   Requires:
-     - the theme CSS below in styles.css (variable palettes + all UI
-       styling, appended in the "Theme Switcher styles" block)
-     - an empty <div id="themeSwitcher"></div> somewhere in the page
-     - the tiny inline snippet in <head> that sets data-theme on
-       <html> before first paint (prevents a flash of the wrong theme)
-
-   Everything else — the trigger button, the popover, the White Mode
-   liability waiver modal — is built here and appended to the DOM.
-   ══════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
@@ -2474,10 +2527,6 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
   var root = document.documentElement;
   var currentTheme = DEFAULT_THEME;
 
-  /* ---------------- persistence ---------------- */
-  /* localStorage can throw in locked-down contexts (private tabs with
-     strict settings, sandboxed iframes) — never let a storage failure
-     break theming, just fall back to an in-memory choice. */
   function readStoredTheme() {
     try {
       var v = window.localStorage.getItem(STORAGE_KEY);
@@ -2487,10 +2536,9 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
     }
   }
   function writeStoredTheme(id) {
-    try { window.localStorage.setItem(STORAGE_KEY, id); } catch (e) { /* ignore */ }
+    try { window.localStorage.setItem(STORAGE_KEY, id); } catch (e) {  }
   }
 
-  /* ---------------- witty console logs ---------------- */
   var THEME_LOG_MESSAGES = {
     original: '🌌 Back to the original. Familiar. Safe. A little boring, if we\u2019re honest.',
     white:    '⚡ Sigh, initiating flashbang... godspeed, your retinas were warned.',
@@ -2503,7 +2551,6 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
     if (msg) console.log('%c[W.I.S. Theme] ' + msg, 'color:#8b5cf6;font-weight:600;');
   }
 
-  /* ---------------- core apply ---------------- */
   function applyTheme(id, opts) {
     opts = opts || {};
     var theme = THEME_LOOKUP[id] || THEME_LOOKUP[DEFAULT_THEME];
@@ -2516,12 +2563,11 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
     if (!opts.silent) logThemeChange(theme.id);
   }
 
-  /* ---------------- trigger + popover UI ---------------- */
   var switcherRoot, triggerBtn, triggerSwatch, triggerLabel, popover;
 
   function buildSwitcherUI() {
     switcherRoot = document.getElementById('themeSwitcher');
-    if (!switcherRoot) return; // no mount point on this page — nothing to do
+    if (!switcherRoot) return; 
 
     switcherRoot.classList.add('theme-switcher');
 
@@ -2576,8 +2622,7 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
 
       opt.addEventListener('click', function () {
         if (theme.gated) {
-          // White Mode never applies on click alone — it has to clear
-          // the waiver first. See openGatekeeperModal().
+
           openGatekeeperModal(theme);
         } else {
           applyTheme(theme.id);
@@ -2632,16 +2677,6 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
       opts[i].setAttribute('aria-checked', String(isActive));
     }
   }
-
-  /* ══════════════════════════════════════════════════════════════
-     White Mode gatekeeper — the whole point of this exercise.
-     Clicking "PURE White" never applies the theme directly. It opens
-     this modal instead, and only the explicit "I AGREE" button calls
-     applyTheme('white'). Cancelling — button, backdrop click, or
-     Escape — is a full no-op: since the theme was never changed in
-     the first place, "rolling back" just means nothing happens, and
-     nothing gets written to localStorage.
-     ══════════════════════════════════════════════════════════════ */
 
   var modalRoot = null;
   var restoreFocusEl = null;
@@ -2714,8 +2749,7 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
     buildModal();
     restoreFocusEl = document.activeElement;
     modalRoot.hidden = false;
-    // Focus defaults to Cancel, not Confirm — blinding yourself should
-    // take a deliberate reach, not a stray Enter or Space keypress.
+
     modalRoot.querySelector('[data-action="cancel"]').focus();
     console.log('%c[W.I.S. Theme] White Mode requested. Presenting liability waiver\u2026', 'color:#fcd34d;font-weight:600;');
   }
@@ -2728,16 +2762,14 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
 
   function cancelGatekeeper() {
     console.log('%c[W.I.S. Theme] Waiver declined. Rolling back \u2014 your retinas thank you.', 'color:#6ee7b7;font-weight:600;');
-    // No rollback logic needed here: applyTheme('white') was never
-    // called, so the previous theme was never disturbed. Cancelling
-    // is simply closing the modal and changing nothing.
+
     closeGatekeeperModal();
   }
 
   function confirmGatekeeper() {
     closeGatekeeperModal();
     flashbang(function () {
-      applyTheme('white'); // now, and only now, does this get persisted
+      applyTheme('white'); 
     });
   }
 
@@ -2748,18 +2780,12 @@ document.getElementById('canvasBgTransparent').addEventListener('change', () => 
     flash.className = 'theme-flashbang';
     document.body.appendChild(flash);
     flash.addEventListener('animationend', function () { flash.remove(); });
-    window.setTimeout(done, 120); // swap the theme mid-flash so the reveal lands on white
+    window.setTimeout(done, 120); 
   }
 
-  /* ---------------- init ---------------- */
   function init() {
     buildSwitcherUI();
 
-    // The inline <head> snippet already set data-theme before first
-    // paint — just read it back so this script's state agrees with
-    // what's on screen. Fall back to localStorage/default if for some
-    // reason that snippet didn't run (e.g. this script reused on a
-    // page without it).
     var existing = root.getAttribute('data-theme');
     if (existing && THEME_LOOKUP[existing]) {
       currentTheme = existing;
