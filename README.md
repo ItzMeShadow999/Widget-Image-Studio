@@ -122,7 +122,6 @@ Because it implements universal web standards and low-level canvas stream render
 
 ## [TOOLS]
 * **Full Video Conversion:** Output straight to `MP4`, `WEBM`, or an animated `GIF` from a video source, right from the File Converter's format list.
-* **Frame-by-Frame Export:** Convert a GIF or video into a `.zip` of every individual frame, not just the first!
 
 ## [POLISH]
 * Smoother popovers, tighter theme consistency across chips, sliders, and the rotation ring, especially on Kawaii and Discord.
