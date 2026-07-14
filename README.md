@@ -136,6 +136,186 @@ Animated WEBP engine failing to load: now probes all known export shapes from th
 ## [ADDED]
 * **Warning Dialogs:** Integrated a dedicated close button for dismissing warning popups
 * **Dynamic Background Picker:** Implemented a real-time background color picker equipped with a live preview window
+
+---
+
+# PATCH NOTES // 2.5
+
+## [ADDED]
+* **Custom Preset Save/Load:** Adjustment stacks (brightness, blur, filter, crop ratio) can now be saved as named custom presets and re-applied to any image in one click.
+* **Business & Social Size Presets Expanded:** Added `Business Card`, `Postcard`, `Letter`, and `Sticker` print-ready presets alongside the existing social set (`IG Story`, `IG Landscape`, `Twitter Post`, `Twitter Header`, `Facebook Post`, `Pinterest`, `LinkedIn Banner`, `TikTok`, `YouTube Thumb`, `OG Image`).
+
+## [FIXED]
+* Crop ratio lock was silently resetting to `None` when switching between presets mid-edit.
+* `adjBrightness` and `adjBlur` sliders desynced from their numeric input fields on rapid dragging.
+
+---
+
+# PATCH NOTES // 2.4
+
+## [ADDED]
+* **Filter Pack Mood Set:** Added `Cinematic`, `Noir`, `Vivid`, `Faded`, `Matte`, `Warm`, `Cool`, `Amber`, `Retro`, and `Summer` one-click filters.
+* **Discord Asset Presets:** `Server Icon`, `Role Icon`, `Emoji`, `Profile Banner`, `Nitro`, and `Nitro Basic` size templates added for Discord-specific exports.
+
+## [CHANGED]
+* Filter preview thumbnails now render live on the source image instead of a generic placeholder swatch.
+
+---
+
+# PATCH NOTES // 2.3
+
+## [ADDED]
+* **App Icon / Game Icon / Store Art / Steam Hero presets:** Dedicated export sizes for devs shipping to storefronts.
+* **"Go touch grass" idle Easter egg:** After 20 minutes of inactivity in the editor, a small toast nudges you to take a break. Purely cosmetic, dismissible, does not affect your work.
+
+## [FIXED]
+* Export queue would occasionally drop the last image in a multi-file batch if the tab lost focus mid-export.
+
+---
+
+# PATCH NOTES // 2.2
+
+## [ADDED]
+* **Open Graph / OG Image preset** for link-preview cards.
+* **Itch Cover preset** for itch.io page banners.
+
+## [FIXED]
+* Custom colour picker was returning slightly shifted hex values compared to the on-screen swatch due to a colour-space rounding error.
+
+---
+
+# PATCH NOTES // 2.1
+
+## [ADDED]
+* **Keyboard shortcuts:** `Enter` to confirm active dialog, `Escape` to cancel/close wired up across preset pickers, warning modals, and the crop tool.
+
+## [CHANGED]
+* Editor now remembers the last-used export preset per session instead of defaulting back to `Widget` size every time.
+
+## [FIXED]
+* Avatar and Banner presets had swapped aspect ratios in the preset dropdown (Avatar was exporting as a banner ratio and vice versa).
+
+---
+
+# PATCH NOTES // 2.0
+
+## [ADDED]
+* **Full Editor Rewrite:** Rebuilt the image pipeline around a single adjustment stack instead of stacking DOM filters, laying the groundwork for the theme system and filter packs added in later versions.
+* **Batch Export:** Apply one preset/filter combo across multiple uploaded images at once.
+
+## [CHANGED]
+* Rebranded from internal codename "WIF" to **W.I.S. — Widget Image Studio**.
+
+---
+
+# PATCH NOTES // 1.4
+
+## [ADDED]
+* **Business Card & Widget presets** the first non-social export sizes.
+* Basic brightness and blur sliders (`adjBrightness`, `adjBlur`) added to the editor panel.
+
+## [FIXED]
+* Uploading a non-image file silently froze the editor instead of showing the `Not an image` error message.
+
+---
+
+# PATCH NOTES // 1.3
+
+## [ADDED]
+* **Instagram & Twitter presets:** `IG Story`, `IG Landscape`, `Twitter Post`, `Twitter Header`.
+
+## [FIXED]
+* Drag-and-drop upload wasn't registering on Firefox due to a missing `dragover` preventDefault call.
+
+---
+
+# PATCH NOTES // 1.2
+
+## [ADDED]
+* **Crop tool v1:** Freeform and locked-ratio cropping.
+
+## [CHANGED]
+* Upload zone redesigned to accept paste-from-clipboard in addition to drag-and-drop and file picker.
+
+---
+
+# PATCH NOTES // 1.1
+
+## [FIXED]
+* First stability patch post-launch: fixed a memory leak where re-uploading an image without refreshing the page would keep the previous image's canvas alive in memory.
+* Export button was exporting at the canvas's on-screen pixel size instead of the original image resolution.
+
+---
+
+# PATCH NOTES // 1.0 — Initial Release
+
+## [ADDED]
+* Core image upload → preview → export pipeline.
+* Single default `Avatar` export preset.
+* Basic PNG/JPEG export.
+
+---
+
+# PATCH NOTES // 0.6 Beta
+
+## [FIXED]
+* Canvas rendering would occasionally show a blank frame on first load in Safari due to a race between the image `onload` event and canvas context initialization.
+
+## [ADDED]
+* Minimal loading spinner during export.
+
+---
+
+# PATCH NOTES // 0.5 Beta
+
+## [ADDED]
+* First working export-to-file button (previously export only opened the result in a new tab).
+
+## [CHANGED]
+* Moved from a single-page inline script to a proper `app.js` file, separating logic from markup for the first time.
+
+---
+
+# PATCH NOTES // 0.4 Beta
+
+## [FIXED]
+* Uploaded images larger than 4000px on either dimension would crash the canvas renderer on lower-end devices.
+
+## [ADDED]
+* Basic file size/type validation before attempting to render an upload.
+
+---
+
+# PATCH NOTES // 0.3 Beta
+
+## [ADDED]
+* Second image preset added (previously only one fixed square output size existed) this became the seed for the full preset system in later versions.
+
+## [CHANGED]
+* Replaced placeholder Comic Sans UI font with a proper system font stack.
+
+---
+
+# PATCH NOTES // 0.2 Beta
+
+## [FIXED]
+* Fixed the editor not clearing the canvas between image uploads, causing ghosting of the previous image behind the new one.
+
+## [ADDED]
+* Basic dark background for the editor view (still no theme system just a single hardcoded dark palette).
+
+---
+
+# PATCH NOTES // 0.1 Beta — First Build
+
+## [ADDED]
+* Proof-of-concept build: upload a single image, view it on an HTML canvas, download it back out unmodified.
+* No presets, no filters, no editing tools just upload → view → export.
+
+---
+
+*Notes 0.1–2.5 compiled retroactively for archive purposes. For the actively maintained changelog, see PATCH NOTES // 2.6 onward.*
+
 </details>
 
 <details>
