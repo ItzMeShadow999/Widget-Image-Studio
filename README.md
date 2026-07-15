@@ -82,6 +82,14 @@ Because it implements universal web standards and low-level canvas stream render
 
 <details>
   <summary>Patch Notes</summary>
+  
+# PATCH NOTES // 2.7.3
+
+## [FIXED]
+
+Widget Effect Top Strip Squish: applyWidgetEffect was cropping the top strip using the 5-argument form of drawImage, which only controls destination placement/size — with no way to also crop the source, the entire image got squashed into the shorter remaining height. Switched to the 9-argument form to crop the source at the strip boundary and draw it 1:1 on the canvas, so the image below the strip renders full-size and undistorted, with the radius cutout clipping correctly against it.
+
+---
 
 # PATCH NOTES // 2.7.2
 
